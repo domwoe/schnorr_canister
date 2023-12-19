@@ -9,6 +9,10 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-candid = "0.8"
-ic-cdk = "0.7"
-ic-cdk-timers = "0.1" # Feel free to remove this dependency if you don't need timers
+bip32 = { "version" = "0.5.1", features = ["k256"] }
+candid = "0.10.1"
+ic-cdk = "0.12.0"
+ic-stable-structures = "0.6"
+getrandom = { version = "0.2.11", features = ["custom"] }
+k256 = { "version" = "0.13.2", features = ["schnorr"] }
+serde = "1"

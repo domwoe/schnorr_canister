@@ -4,21 +4,6 @@
       "candid": "src/schnorr_canister_backend/schnorr_canister_backend.did",
       "package": "schnorr_canister_backend",
       "type": "rust"
-    },
-    "schnorr_canister_frontend": {
-      "dependencies": [
-        "schnorr_canister_backend"
-      ],
-      "source": [
-        "src/schnorr_canister_frontend/assets"
-      ],
-      "type": "assets"
-    }
-  },
-  "defaults": {
-    "build": {
-      "args": "",
-      "packtool": ""
     }
   },
   "output_env_file": ".env",
