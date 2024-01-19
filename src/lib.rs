@@ -1,6 +1,6 @@
 use bip32::{Seed, XPrv};
 use candid::{CandidType, Deserialize, Principal};
-use k256::ecdsa::signature::hazmat::PrehashSigner;
+use k256::ecdsa::signature::Signer;
 use serde::Serialize;
 
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
@@ -164,10 +164,12 @@ fn sign_with_schnorr(arg: SignWithSchnorr) -> SignWithSchnorrReply {
 
     let signing_key = k256::schnorr::SigningKey::from_bytes(key_bytes.as_slice()).unwrap();
     
-    let signature = match signing_key.sign_prehash(message_hash.as_slice()) {
-        Ok(signature) => signature,
-        Err(_err) => ic_cdk::trap("Error signing message"),
-    };
+    // let signature = match signing_key.sign_prehash(message_hash.as_slice()) {
+    //     Ok(signature) => signature,
+    //     Err(_err) => ic_cdk::trap("Error signing message"),
+    // };
+
+    let signature = signing_key.sign(message_hash.as_slice());
 
     SignWithSchnorrReply {
         signature: signature.to_bytes().to_vec(),

@@ -21,6 +21,7 @@ Once the job completes, your application will be available at `http://localhost:
 ## ToDos
 
 - [ ] Implement key derivation
+- [ ] Require cycles
 - [ ] Try to get rid of `getrandom` dependency or provide proper implementation of custom function
 - [ ] Try to init key in `init` function. Maybe with timer.
 
