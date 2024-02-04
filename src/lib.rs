@@ -108,6 +108,12 @@ struct HttpResponse {
 }
 
 #[derive(Serialize, Deserialize)]
+struct Metrics {
+    pub balance: u128,
+    pub sig_count: u128,
+}
+
+#[derive(Serialize, Deserialize)]
 struct State {
     // The seeds for the keys are stored in a stable memory.
     #[serde(skip, default = "init_stable_data")]
@@ -196,10 +202,13 @@ fn sign_with_schnorr(arg: SignWithSchnorr) -> SignWithSchnorrReply {
             .clone()
     }));
 
+    // Increment the signature count
     STATE.with(|s| {
-        let _ = s.borrow_mut().sig_count.set(s.borrow().sig_count.get() + 1);
+        let mut state = s.borrow_mut();
+        let current_count = state.sig_count.get().clone();
+        let _ = state.sig_count.set(current_count + 1);
     });
-
+    
     let root_xprv = XPrv::new(&seed).unwrap();
     let private_key_bytes = root_xprv.private_key().to_bytes();
 
@@ -239,12 +248,15 @@ fn sign_with_schnorr(arg: SignWithSchnorr) -> SignWithSchnorrReply {
 fn http_request(_req: HttpRequest) -> HttpResponse {
 
     let sig_count = STATE.with(|s| s.borrow().sig_count.get().clone());
-    let sig_count = format!("Signature count: {}", sig_count);
+
+    let balance = ic_cdk::api::canister_balance128();
+
+    let metrics = Metrics { balance, sig_count };
 
     HttpResponse {
         status_code: 200,
-        headers: vec![("content-type".to_string(), "text/plain charset=utf-8".to_string())],
-        body: ByteBuf::from(sig_count),
+        headers: vec![("content-type".to_string(), "application/json".to_string())],
+        body: ByteBuf::from(serde_json::to_string(&metrics).unwrap().as_bytes().to_vec()),
     }
 }
 
