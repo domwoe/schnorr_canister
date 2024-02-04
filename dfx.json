@@ -7,7 +7,7 @@
       "pullable": {
         "dependencies": [],
         "wasm_url": "https://github.com/domwoe/pullable/releases/latest/download/schnorr_canister.wasm",
-        "init_guide": "Call method `init_key` after installation."
+        "init_guide": ""
       }
     }
   },

@@ -1,6 +1,6 @@
-# schnorr_canister
+# Schnorr Signature Canister
 
-Mock canister to create schnorr signatures on the Internet Computer.
+Canister to create schnorr signatures on the Internet Computer.
 
 DO NOT USE IN PRODUCTION! KEY MATERIAL COULD BE ACCESSED BY NODE PROVIDERS!
 
@@ -18,15 +18,12 @@ dfx start --background
 
 Once the job completes, your application will be available at `http://localhost:4943?canisterId={asset_canister_id}`.
 
-## ToDos
+## Deployment on the Internet Computer
 
-- [ ] Implement key derivation
-- [ ] Require cycles
-- [ ] Try to get rid of `getrandom` dependency or provide proper implementation of custom function
-- [ ] Try to init key in `init` function. Maybe with timer.
+The canister is deployed to `htvbm-vaaaa-aaaap-qb5kq-cai`. You can check the Canid UI at [`https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=htvbm-vaaaa-aaaap-qb5kq-cai`](https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=htvbm-vaaaa-aaaap-qb5kq-cai).
 
-## Feedback
+You can also see how many signatures have been generated at [https://htvbm-vaaaa-aaaap-qb5kq-cai.raw.icp0.io/](https://htvbm-vaaaa-aaaap-qb5kq-cai.raw.icp0.io/).
 
-- `--no-frontend` flag is still not working
-- CDK initialized with outdated versions
+
+
 
