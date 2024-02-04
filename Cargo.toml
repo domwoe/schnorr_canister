@@ -12,8 +12,6 @@ crate-type = ["cdylib"]
 [dependencies]
 bip32 = { "version" = "0.5.1", features = ["k256"] }
 bitcoin = { version = "0.31.0", features = ["serde"] }
-# candid = "^0.10.3"
-# ic-cdk = "^0.10.0"
 candid = "0.9.10"
 ic-cdk = "0.11.0"
 ic-cdk-timers = "0.5.1"

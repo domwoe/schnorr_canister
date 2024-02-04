@@ -14,7 +14,7 @@ Add the following to your `dfx.json` config file:
     "schnorr_canister": {
       "type": "custom",
       "candid": "https://github.com/domwoe/schnorr_canister/releases/latest/download/schnorr_canister.did",
-      "wasm": "https://github.com/domwoe/schnorr_canister/releases/latest/download/schnorr_canister.wasm",
+      "wasm": "https://github.com/domwoe/schnorr_canister/releases/latest/download/schnorr_canister.wasm.gz",
       "remote": {
         "id": {
           "ic": "htvbm-vaaaa-aaaap-qb5kq-cai",

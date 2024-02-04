@@ -1,12 +1,13 @@
 {
   "canisters": {
-    "schnorr_canister_backend": {
+    "schnorr_canister": {
       "candid": "schnorr_canister.did",
       "package": "schnorr_canister",
       "type": "rust",
+      "gzip": true,
       "pullable": {
         "dependencies": [],
-        "wasm_url": "https://github.com/domwoe/pullable/releases/latest/download/schnorr_canister.wasm",
+        "wasm_url": "https://github.com/domwoe/releases/latest/download/schnorr_canister.wasm.gz",
         "init_guide": ""
       }
     }
