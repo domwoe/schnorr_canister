@@ -4,6 +4,28 @@ Canister to create schnorr signatures on the Internet Computer.
 
 DO NOT USE IN PRODUCTION! KEY MATERIAL COULD BE ACCESSED BY NODE PROVIDERS!
 
+## Add the canister to your project
+
+Add the following to your `dfx.json` config file:
+
+```json
+{
+  "canisters": {
+    "schnorr_canister": {
+      "type": "custom",
+      "candid": "https://github.com/domwoe/schnorr_canister/releases/latest/download/schnorr_canister.did",
+      "wasm": "https://github.com/domwoe/schnorr_canister/releases/latest/download/schnorr_canister.wasm",
+      "remote": {
+        "id": {
+          "ic": "htvbm-vaaaa-aaaap-qb5kq-cai",
+          "playground": "htvbm-vaaaa-aaaap-qb5kq-cai"
+        }
+      }
+    }
+  }
+}
+```
+
 ## Running the project locally
 
 If you want to test your project locally, you can use the following commands:
@@ -26,10 +48,15 @@ You can check the Canid UI at [`https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/
 
 You can also see how many signatures have been generated at [https://htvbm-vaaaa-aaaap-qb5kq-cai.raw.icp0.io/](https://htvbm-vaaaa-aaaap-qb5kq-cai.raw.icp0.io/).
 
+## To Do
+
+- [ ] Get integration tests working. See branch [`feature/integration-tests`](https://github.com/domwoe/schnorr_canister/tree/feat/integration-tests) for the current state of the integration tests.
+- [ ] Potentially add cycles payments for creating signatures.
+
 
 ## Credits
 
-This canister is monitored by [CycleOps](https://cycleops.dev)
+This canister is monitored by [CycleOps](https://cycleops.dev).
 
 
 
