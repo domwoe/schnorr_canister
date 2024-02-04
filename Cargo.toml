@@ -7,11 +7,13 @@ resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-crate-type = ["cdylib"]
+name = "schnorr_canister"
+crate-type = ["lib", "cdylib"]
 
 [dependencies]
 bip32 = { "version" = "0.5.1", features = ["k256"] }
 bitcoin = { version = "0.31.0", features = ["serde"] }
+bitcoin_hashes = "0.13.0"
 # candid = "^0.10.3"
 # ic-cdk = "^0.10.0"
 candid = "0.9.10"
@@ -20,6 +22,12 @@ ic-cdk-timers = "0.5.1"
 ic-crypto-extended-bip32 = { git = "https://github.com/dfinity/ic/", rev = "8b6c8d1b0f75b1c4d41a3e251a715bde59c4d19a" }
 ic-stable-structures = "0.6"
 getrandom = { version = "0.2.11", features = ["custom"] }
+pocket-ic = "2.0.1"
 serde = "1"
 serde_bytes = "0.11.14"
 serde_json = "1.0.113"
+
+
+[dev-dependencies]
+
+

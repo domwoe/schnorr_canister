@@ -25,32 +25,32 @@ use memory::Memory;
 const MAX_VALUE_SIZE: u32 = 100;
 
 #[derive(CandidType, Deserialize, Serialize, Debug)]
-struct SchnorrPublicKey {
+pub struct SchnorrPublicKey {
     pub canister_id: Option<Principal>,
     pub derivation_path: Vec<Vec<u8>>,
     pub key_id: SchnorrKeyId,
 }
 
 #[derive(CandidType, Deserialize, Debug)]
-struct SchnorrPublicKeyReply {
+pub struct SchnorrPublicKeyReply {
     pub public_key: Vec<u8>,
     pub chain_code: Vec<u8>,
 }
 
 #[derive(CandidType, Deserialize, Serialize, Debug)]
-struct SignWithSchnorr {
+pub struct SignWithSchnorr {
     pub message: Vec<u8>,
     pub derivation_path: Vec<Vec<u8>>,
     pub key_id: SchnorrKeyId,
 }
 
-enum SchnorrKeyIds {
+pub enum SchnorrKeyIds {
     DfxTestKey,
     TestKey1,
 }
 
 impl SchnorrKeyIds {
-    fn to_key_id(&self) -> SchnorrKeyId {
+    pub fn to_key_id(&self) -> SchnorrKeyId {
         SchnorrKeyId {
             name: match self {
                 Self::DfxTestKey => "dfx_test_key",
@@ -66,12 +66,12 @@ impl SchnorrKeyIds {
 }
 
 #[derive(CandidType, Deserialize, Debug)]
-struct SignWithSchnorrReply {
+pub struct SignWithSchnorrReply {
     pub signature: Vec<u8>,
 }
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-struct SchnorrKeyId {
+pub struct SchnorrKeyId {
     name: String,
 }
 impl Storable for SchnorrKeyId {
@@ -129,7 +129,7 @@ thread_local! {
 
 #[ic_cdk::init]
 fn init() {
-    ic_cdk_timers::set_timer(Duration::ZERO, move || {
+    ic_cdk_timers::set_timer(Duration::ZERO, || {
         for key in SchnorrKeyIds::variants() {
             ic_cdk::spawn(async move {
                 let seed = get_random_seed().await;
@@ -299,3 +299,59 @@ pub fn my_custom_random(_buf: &mut [u8]) -> Result<(), Error> {
 register_custom_getrandom!(my_custom_random);
 
 ic_cdk::export_candid!();
+
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+  
+//     use bitcoin_hashes::sha256;
+//     use bitcoin_hashes::Hash;
+  
+//     use bitcoin::secp256k1::{schnorr::Signature, Secp256k1};
+//     use bitcoin::PublicKey;
+
+//     #[test]
+//     fn test_sign_and_verify_schnorr() {
+//         // Setup for signing
+//         let test_seed = [1u8; 64]; // Use a different seed for this test
+//         let derivation_path = vec![vec![1u8; 4]]; // Example derivation path for signing
+//         let key_id = SchnorrKeyIds::DfxTestKey.to_key_id();
+//         let message = b"Test message";
+        
+//         let digest = sha256::Hash::hash(message).to_byte_array();
+
+//         // Initialize STATE with the test seed for signing
+//         STATE.with(|s| {
+//             s.borrow_mut().seeds.insert(key_id.clone(), test_seed);
+//         });
+
+//         // Create a SignWithSchnorr argument struct
+//         let sign_arg = SignWithSchnorr {
+//             message: digest.to_vec(),
+//             derivation_path: derivation_path.clone(),
+//             key_id: key_id.clone(),
+//         };
+
+//         // Call the sign function
+//         let sign_reply = sign_with_schnorr(sign_arg);
+
+//         // Setup for verification
+//         let secp = Secp256k1::verification_only();
+//         let signature = Signature::from_slice(&sign_reply.signature).expect("Invalid signature format");
+
+
+//         let public_key_reply = schnorr_public_key(SchnorrPublicKey {
+//             canister_id: None,
+//             derivation_path,
+//             key_id,
+//         });
+
+//         let raw_public_key = public_key_reply.public_key;
+
+//         let public_key = PublicKey::from_slice(&raw_public_key).unwrap().into();
+
+//         // Verify the signature
+//         assert!(secp.verify_schnorr(&signature, &Message::from_digest_slice(&digest).unwrap(), &public_key).is_ok());
+//     }
+// }
