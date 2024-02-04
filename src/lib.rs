@@ -248,9 +248,7 @@ fn sign_with_schnorr(arg: SignWithSchnorr) -> SignWithSchnorrReply {
 fn http_request(_req: HttpRequest) -> HttpResponse {
 
     let sig_count = STATE.with(|s| s.borrow().sig_count.get().clone());
-
     let balance = ic_cdk::api::canister_balance128();
-
     let metrics = Metrics { balance, sig_count };
 
     HttpResponse {

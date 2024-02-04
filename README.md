@@ -20,10 +20,16 @@ Once the job completes, your application will be available at `http://localhost:
 
 ## Deployment on the Internet Computer
 
-The canister is deployed to `htvbm-vaaaa-aaaap-qb5kq-cai`. You can check the Canid UI at [`https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=htvbm-vaaaa-aaaap-qb5kq-cai`](https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=htvbm-vaaaa-aaaap-qb5kq-cai).
+The canister is deployed to `htvbm-vaaaa-aaaap-qb5kq-cai`. 
+
+You can check the Canid UI at [`https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=htvbm-vaaaa-aaaap-qb5kq-cai`](https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=htvbm-vaaaa-aaaap-qb5kq-cai).
 
 You can also see how many signatures have been generated at [https://htvbm-vaaaa-aaaap-qb5kq-cai.raw.icp0.io/](https://htvbm-vaaaa-aaaap-qb5kq-cai.raw.icp0.io/).
 
+
+## Credits
+
+This canister is monitored by [CycleOps](https://cycleops.dev)
 
 
 
