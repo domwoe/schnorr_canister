@@ -2,13 +2,11 @@ extern crate schnorr_canister;
 
 use bitcoin_hashes::{Hash, sha256};
 
-use candid::{Encode, Principal};
+use candid::{Decode, Encode, Principal};
 use ic_cdk::api::management_canister::provisional::CanisterId;
 use pocket_ic::{PocketIc, WasmResult};
 use schnorr_canister::{SignWithSchnorr, SchnorrKeyIds};
 use std::path::Path;
-
-
 
 
 #[test]
@@ -23,18 +21,7 @@ fn test_sign_with_schnorr() {
 
     pic.tick();
     pic.tick();
-    pic.tick();
-    pic.tick();
-    pic.tick();
-    pic.tick();
-    pic.tick();
-    pic.tick();
-    pic.tick();
-    pic.tick();
-    pic.tick();
-    pic.tick();
-    pic.tick();
-   
+    
     let derivation_path = vec![vec![1u8; 4]]; // Example derivation path for signing
     let key_id = SchnorrKeyIds::TestKey1.to_key_id();
     let message = b"Test message";
@@ -49,12 +36,19 @@ fn test_sign_with_schnorr() {
 
     let reply = call_schnorr_canister(&pic, canister_id, "sign_with_schnorr", Encode!(&payload).unwrap());
 
-    println!("Reply: {:?}", reply);
+    let reply = match reply {
+        WasmResult::Reply(reply) => {
+            reply
+        }
+        WasmResult::Reject(msg) => panic!("Call failed: {}", msg),
+    };
+
+    println!("Reply: {:?}", Decode!(&reply.as_slice()));
     
 }
 
 fn load_schnorr_canister_wasm() -> Vec<u8> {
-    let wasm_path = Path::new("./target/wasm32-unknown-unknown/release/schnorr_canister.wasm");
+    let wasm_path = Path::new("./target/wasm32-unknown-unknown/release/schnorr_canister.wasm.gz");
 
     std::fs::read(wasm_path).unwrap()
 }
