@@ -60,7 +60,6 @@ You can also see how many signatures have been generated at [https://htvbm-vaaaa
 
 ## To Do
 
-- [ ] Get integration tests working. See branch [`feature/integration-tests`](https://github.com/domwoe/schnorr_canister/tree/feat/integration-tests) for the current state of the integration tests.
 - [ ] Potentially add cycles payments for creating signatures.
 
 

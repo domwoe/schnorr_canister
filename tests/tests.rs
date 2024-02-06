@@ -2,16 +2,18 @@ extern crate schnorr_canister;
 
 use bitcoin_hashes::{Hash, sha256};
 
-use candid::{Decode, Encode, Principal};
-use ic_cdk::api::management_canister::provisional::CanisterId;
+use candid::{decode_one, encode_one, CandidType,Principal};
 use pocket_ic::{PocketIc, WasmResult};
-use schnorr_canister::{SignWithSchnorr, SchnorrKeyIds};
+use schnorr_canister::{SignWithSchnorr, SchnorrKeyIds, SignWithSchnorrReply};
+use serde::Deserialize;
 use std::path::Path;
 
 
 #[test]
 fn test_sign_with_schnorr() {
     let pic = PocketIc::new();
+
+    let my_principal = Principal::anonymous();
     // Create an empty canister as the anonymous principal and add cycles.
     let canister_id = pic.create_canister();
     pic.add_cycles(canister_id, 2_000_000_000_000);
@@ -19,8 +21,8 @@ fn test_sign_with_schnorr() {
     let wasm_bytes = load_schnorr_canister_wasm();
     pic.install_canister(canister_id, wasm_bytes, vec![], None);
 
-    pic.tick();
-    pic.tick();
+    // Make sure the canister is properly initialized
+    fast_forward(&pic, 5);
     
     let derivation_path = vec![vec![1u8; 4]]; // Example derivation path for signing
     let key_id = SchnorrKeyIds::TestKey1.to_key_id();
@@ -34,16 +36,10 @@ fn test_sign_with_schnorr() {
         key_id: key_id.clone(),
     };
 
-    let reply = call_schnorr_canister(&pic, canister_id, "sign_with_schnorr", Encode!(&payload).unwrap());
+    let reply: Result<SignWithSchnorrReply, String> = update(&pic, my_principal,  canister_id, "sign_with_schnorr", encode_one(&payload).unwrap());
 
-    let reply = match reply {
-        WasmResult::Reply(reply) => {
-            reply
-        }
-        WasmResult::Reject(msg) => panic!("Call failed: {}", msg),
-    };
-
-    println!("Reply: {:?}", Decode!(&reply.as_slice()));
+    assert!(reply.is_ok());
+    println!("Reply: {:?}", &reply.unwrap());
     
 }
 
@@ -53,12 +49,22 @@ fn load_schnorr_canister_wasm() -> Vec<u8> {
     std::fs::read(wasm_path).unwrap()
 }
 
-fn call_schnorr_canister(
+pub fn update<T: CandidType + for<'de> Deserialize<'de>>(
     ic: &PocketIc,
-    can_id: CanisterId,
+    sender: Principal,
+    receiver: Principal,
     method: &str,
-    payload: Vec<u8>,
-) -> WasmResult {
-    ic.update_call(can_id, Principal::anonymous(), method, payload)
-        .expect("Failed to call schnorr canister")
+    args: Vec<u8>,
+) -> Result<T, String> {
+    match ic.update_call(receiver, sender, method, args) {
+        Ok(WasmResult::Reply(data)) => decode_one(&data).unwrap(),
+        Ok(WasmResult::Reject(error_message)) => Err(error_message.to_string()),
+        Err(user_error) => Err(user_error.to_string()),
+    }
+}
+
+pub fn fast_forward(ic: &PocketIc, ticks: u64) {
+    for _ in 0..ticks-1 {
+       ic.tick();
+    }
 }

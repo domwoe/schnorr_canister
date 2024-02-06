@@ -191,7 +191,6 @@ fn schnorr_public_key(arg: SchnorrPublicKey) -> SchnorrPublicKeyReply {
 #[ic_cdk::update]
 fn sign_with_schnorr(arg: SignWithSchnorr) -> SignWithSchnorrReply {
     
-
     let message = arg.message;
 
     let seed = Seed::new(STATE.with(|s| {
