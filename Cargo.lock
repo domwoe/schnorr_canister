@@ -2357,6 +2357,7 @@ dependencies = [
  "ic-crypto-extended-bip32",
  "ic-stable-structures 0.6.2",
  "pocket-ic",
+ "secp256k1",
  "serde",
  "serde_bytes",
  "serde_json",

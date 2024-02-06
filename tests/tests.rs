@@ -1,10 +1,11 @@
 extern crate schnorr_canister;
 
+use secp256k1::{schnorr::Signature, Message, PublicKey};
 use bitcoin_hashes::{Hash, sha256};
 
 use candid::{decode_one, encode_one, CandidType,Principal};
 use pocket_ic::{PocketIc, WasmResult};
-use schnorr_canister::{SignWithSchnorr, SchnorrKeyIds, SignWithSchnorrReply};
+use schnorr_canister::{SchnorrKeyIds, SchnorrPublicKey, SchnorrPublicKeyReply, SignWithSchnorr, SignWithSchnorrReply};
 use serde::Deserialize;
 use std::path::Path;
 
@@ -36,10 +37,27 @@ fn test_sign_with_schnorr() {
         key_id: key_id.clone(),
     };
 
-    let reply: Result<SignWithSchnorrReply, String> = update(&pic, my_principal,  canister_id, "sign_with_schnorr", encode_one(&payload).unwrap());
+    let res: Result<SignWithSchnorrReply, String> = update(&pic, my_principal,  canister_id, "sign_with_schnorr", encode_one(&payload).unwrap());
 
-    assert!(reply.is_ok());
-    println!("Reply: {:?}", &reply.unwrap());
+    let sig = res.unwrap().signature;
+
+    let payload = SchnorrPublicKey {
+        canister_id: None,
+        derivation_path: derivation_path.clone(),
+        key_id: key_id.clone(),
+    };
+
+    let res: Result<SchnorrPublicKeyReply, String> =  update(&pic, my_principal,  canister_id, "schnorr_public_key", encode_one(&payload).unwrap());
+
+    let pub_key_sec1 = res.unwrap().public_key;
+
+    let pub_key = PublicKey::from_slice(&pub_key_sec1).unwrap().into();
+
+    let sig = Signature::from_slice(&sig).unwrap();
+
+    let msg = Message::from_digest_slice(&digest).unwrap();
+
+    sig.verify(&msg, &pub_key).unwrap();
     
 }
 
@@ -57,7 +75,7 @@ pub fn update<T: CandidType + for<'de> Deserialize<'de>>(
     args: Vec<u8>,
 ) -> Result<T, String> {
     match ic.update_call(receiver, sender, method, args) {
-        Ok(WasmResult::Reply(data)) => decode_one(&data).unwrap(),
+        Ok(WasmResult::Reply(data)) => Ok(decode_one(&data).unwrap()),
         Ok(WasmResult::Reject(error_message)) => Err(error_message.to_string()),
         Err(user_error) => Err(user_error.to_string()),
     }
