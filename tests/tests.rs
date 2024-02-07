@@ -57,7 +57,7 @@ fn test_sign_with_schnorr() {
 
     let msg = Message::from_digest_slice(&digest).unwrap();
 
-    sig.verify(&msg, &pub_key).unwrap();
+    assert!(sig.verify(&msg, &pub_key).is_ok());
     
 }
 

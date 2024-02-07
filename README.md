@@ -52,11 +52,15 @@ cargo test
 
 ## Deployment on the Internet Computer
 
-The canister is deployed to `htvbm-vaaaa-aaaap-qb5kq-cai`. 
+The canister is deployed to `6fwhw-fyaaa-aaaap-qb7ua-cai`. 
 
-You can check the Canid UI at [`https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=htvbm-vaaaa-aaaap-qb5kq-cai`](https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=htvbm-vaaaa-aaaap-qb5kq-cai).
+You can check the Canid UI at [`https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=6fwhw-fyaaa-aaaap-qb7ua-cai`](https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=6fwhw-fyaaa-aaaap-qb7ua-cai).
 
-You can also see how many signatures have been generated at [https://htvbm-vaaaa-aaaap-qb5kq-cai.raw.icp0.io/](https://htvbm-vaaaa-aaaap-qb5kq-cai.raw.icp0.io/).
+You can also see how many signatures have been generated at [https://6fwhw-fyaaa-aaaap-qb7ua-cai.raw.icp0.io/](https://6fwhw-fyaaa-aaaap-qb7ua-cai.raw.icp0.io/).
+
+### Interact with Blast Playground
+
+You can interact with the canister using the [Blast Playground](https://jglts-daaaa-aaaai-qnpma-cai.ic0.app/716.6f215a64cb3443dd37b2e56d1193d4ea4b6fde42db8f2cd6cbca7068).
 
 ## To Do
 
