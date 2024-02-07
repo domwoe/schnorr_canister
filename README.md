@@ -17,8 +17,8 @@ Add the following to your `dfx.json` config file:
       "wasm": "https://github.com/domwoe/schnorr_canister/releases/latest/download/schnorr_canister.wasm.gz",
       "remote": {
         "id": {
-          "ic": "htvbm-vaaaa-aaaap-qb5kq-cai",
-          "playground": "htvbm-vaaaa-aaaap-qb5kq-cai"
+          "ic": "6fwhw-fyaaa-aaaap-qb7ua-cai",
+          "playground": "6fwhw-fyaaa-aaaap-qb7ua-cai"
         }
       }
     }
