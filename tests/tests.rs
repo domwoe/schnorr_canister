@@ -1,14 +1,17 @@
 extern crate schnorr_canister;
 
+use bitcoin_hashes::{sha256, Hash};
 use secp256k1::{schnorr::Signature, Message, PublicKey};
-use bitcoin_hashes::{Hash, sha256};
 
-use candid::{decode_one, encode_one, CandidType,Principal};
+use candid::{decode_one, encode_one, CandidType, Principal};
 use pocket_ic::{PocketIc, WasmResult};
-use schnorr_canister::{SchnorrKeyIds, SchnorrPublicKey, SchnorrPublicKeyReply, SignWithSchnorr, SignWithSchnorrReply};
+use schnorr_canister::{
+    SchnorrKeyIds, SchnorrPublicKeyArgs, SchnorrPublicKeyResult, SignWithSchnorrArgs,
+    SignWithSchnorrResult,
+};
 use serde::Deserialize;
+use serde_bytes::ByteBuf;
 use std::path::Path;
-
 
 #[test]
 fn test_sign_with_schnorr() {
@@ -24,30 +27,48 @@ fn test_sign_with_schnorr() {
 
     // Make sure the canister is properly initialized
     fast_forward(&pic, 5);
-    
+
     let derivation_path = vec![vec![1u8; 4]]; // Example derivation path for signing
     let key_id = SchnorrKeyIds::TestKey1.to_key_id();
     let message = b"Test message";
 
     let digest = sha256::Hash::hash(message).to_byte_array();
 
-    let payload: SignWithSchnorr = SignWithSchnorr {
-        message: digest.to_vec(),
-        derivation_path: derivation_path.clone(),
+    let payload: SignWithSchnorrArgs = SignWithSchnorrArgs {
+        message: ByteBuf::from(digest.to_vec()),
+        derivation_path: derivation_path
+            .iter()
+            .map(|v| ByteBuf::from(v.clone()))
+            .collect(),
         key_id: key_id.clone(),
     };
 
-    let res: Result<SignWithSchnorrReply, String> = update(&pic, my_principal,  canister_id, "sign_with_schnorr", encode_one(&payload).unwrap());
+    let res: Result<SignWithSchnorrResult, String> = update(
+        &pic,
+        my_principal,
+        canister_id,
+        "sign_with_schnorr",
+        encode_one(&payload).unwrap(),
+    );
 
     let sig = res.unwrap().signature;
 
-    let payload = SchnorrPublicKey {
+    let payload = SchnorrPublicKeyArgs {
         canister_id: None,
-        derivation_path: derivation_path.clone(),
+        derivation_path: derivation_path
+            .iter()
+            .map(|v| ByteBuf::from(v.clone()))
+            .collect(),
         key_id: key_id.clone(),
     };
 
-    let res: Result<SchnorrPublicKeyReply, String> =  update(&pic, my_principal,  canister_id, "schnorr_public_key", encode_one(&payload).unwrap());
+    let res: Result<SchnorrPublicKeyResult, String> = update(
+        &pic,
+        my_principal,
+        canister_id,
+        "schnorr_public_key",
+        encode_one(&payload).unwrap(),
+    );
 
     let pub_key_sec1 = res.unwrap().public_key;
 
@@ -58,7 +79,6 @@ fn test_sign_with_schnorr() {
     let msg = Message::from_digest_slice(&digest).unwrap();
 
     assert!(sig.verify(&msg, &pub_key).is_ok());
-    
 }
 
 fn load_schnorr_canister_wasm() -> Vec<u8> {
@@ -82,7 +102,7 @@ pub fn update<T: CandidType + for<'de> Deserialize<'de>>(
 }
 
 pub fn fast_forward(ic: &PocketIc, ticks: u64) {
-    for _ in 0..ticks-1 {
-       ic.tick();
+    for _ in 0..ticks - 1 {
+        ic.tick();
     }
 }
