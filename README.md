@@ -47,6 +47,7 @@ We use [PocketIC](https://github.com/dfinity/pocketic) for integration testing. 
 You can run the tests with the following command:
 
 ```sh
+cargo build --release --target wasm32-unknown-unknown --package schnorr_canister
 cargo test
 ```
 

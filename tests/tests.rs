@@ -82,7 +82,7 @@ fn test_sign_with_schnorr() {
 }
 
 fn load_schnorr_canister_wasm() -> Vec<u8> {
-    let wasm_path = Path::new("./target/wasm32-unknown-unknown/release/schnorr_canister.wasm.gz");
+    let wasm_path = Path::new("./target/wasm32-unknown-unknown/release/schnorr_canister.wasm");
 
     std::fs::read(wasm_path).unwrap()
 }
