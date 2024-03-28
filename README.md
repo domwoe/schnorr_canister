@@ -42,7 +42,7 @@ Once the job is completed, your application will be available at `http://localho
 
 ### Testing
 
-We use [PocketIC] for integration testing. Please make sure to have it installed and the `POCKET_IC_BIN` environment variable set to the path of the `pocket-ic` binary.
+We use [PocketIC](https://github.com/dfinity/pocketic) for integration testing. Please make sure to have it installed and the `POCKET_IC_BIN` environment variable set to the path of the `pocket-ic` binary.
 
 You can run the tests with the following command:
 
