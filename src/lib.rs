@@ -172,8 +172,7 @@ fn schnorr_public_key(arg: SchnorrPublicKeyArgs) -> SchnorrPublicKeyResult {
         s.borrow()
             .seeds
             .get(&arg.key_id)
-            .expect(format!("No key with name {:?}", &arg.key_id).as_str())
-            .clone()
+            .unwrap_or_else(|| panic!("No key with name {:?}", &arg.key_id))
     }));
 
     let canister_id = match arg.canister_id {
@@ -194,14 +193,13 @@ fn sign_with_schnorr(arg: SignWithSchnorrArgs) -> SignWithSchnorrResult {
         s.borrow()
             .seeds
             .get(&arg.key_id)
-            .expect(format!("No key with name {:?}", &arg.key_id).as_str())
-            .clone()
+            .unwrap_or_else(|| panic!("No key with name {:?}", &arg.key_id))
     }));
 
     // Increment the signature count
     STATE.with(|s| {
         let mut state = s.borrow_mut();
-        let current_count = state.sig_count.get().clone();
+        let current_count = *state.sig_count.get();
         let _ = state.sig_count.set(current_count + 1);
     });
 
@@ -306,7 +304,7 @@ fn sign_with_schnorr_ed25519(
 
 #[ic_cdk::query]
 fn http_request(_req: HttpRequest) -> HttpResponse {
-    let sig_count = STATE.with(|s| s.borrow().sig_count.get().clone());
+    let sig_count = STATE.with(|s| *s.borrow().sig_count.get());
     let balance = ic_cdk::api::canister_balance128();
     let metrics = Metrics { balance, sig_count };
 
@@ -371,7 +369,7 @@ mod tests {
         // Setup for signing
         let test_seed = [1u8; 64];
         // Example derivation path for signing
-        let derivation_path = vec![vec![1u8; 4]]
+        let derivation_path = [vec![1u8; 4]]
             .iter()
             .map(|v| ByteBuf::from(v.clone()))
             .collect();
@@ -415,7 +413,7 @@ mod tests {
         // Setup for signing
         let test_seed = [1u8; 64];
         // Example derivation path for signing
-        let derivation_path = vec![vec![1u8; 4]]
+        let derivation_path = [vec![1u8; 4]]
             .iter()
             .map(|v| ByteBuf::from(v.clone()))
             .collect();

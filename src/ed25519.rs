@@ -7,13 +7,13 @@ pub fn derive_ed25519_private_key(seed: &[u8], path: Vec<DerivationIndex>) -> ([
     let indexes: Vec<u32> = path
         .into_iter()
         .map(|mut v| {
-            let mut bytes = [0u8; 4];
-            let _ = v.0.write(&mut bytes);
+            let bytes = [0u8; 4];
+            let _ = v.0.write(&bytes);
             u32::from_be_bytes(bytes)
         })
         .collect();
 
-    let mut x = hmac_sha512(b"ed25519 seed", &seed);
+    let mut x = hmac_sha512(b"ed25519 seed", seed);
     let mut data = [0u8; 37];
 
     for i in indexes {
@@ -24,7 +24,7 @@ pub fn derive_ed25519_private_key(seed: &[u8], path: Vec<DerivationIndex>) -> ([
         data[1..33].copy_from_slice(xl);
         data[33..37].copy_from_slice(&hardened_index.to_be_bytes());
 
-        x = hmac_sha512(&xr, &data);
+        x = hmac_sha512(xr, &data);
     }
 
     (x[0..32].try_into().unwrap(), x[32..].try_into().unwrap())

@@ -28,7 +28,7 @@ fn test_sign_with_schnorr() {
     // Make sure the canister is properly initialized
     fast_forward(&pic, 5);
 
-    let derivation_path = vec![vec![1u8; 4]]; // Example derivation path for signing
+    let derivation_path = [vec![1u8; 4]]; // Example derivation path for signing
     let key_id = SchnorrKeyIds::TestKey1.to_key_id();
     let message = b"Test message";
 
@@ -48,7 +48,7 @@ fn test_sign_with_schnorr() {
         my_principal,
         canister_id,
         "sign_with_schnorr",
-        encode_one(&payload).unwrap(),
+        encode_one(payload).unwrap(),
     );
 
     let sig = res.unwrap().signature;
@@ -67,7 +67,7 @@ fn test_sign_with_schnorr() {
         my_principal,
         canister_id,
         "schnorr_public_key",
-        encode_one(&payload).unwrap(),
+        encode_one(payload).unwrap(),
     );
 
     let pub_key_sec1 = res.unwrap().public_key;
