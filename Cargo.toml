@@ -8,24 +8,24 @@ resolver = "2"
 
 [lib]
 name = "schnorr_canister"
-crate-type = ["lib", "cdylib"]
+# crate-type = ["lib", "cdylib"]
 
 [dependencies]
 bip32 = { version = "0.5.1", features = ["k256"] }
-bitcoin = { version = "0.31.0", features = ["serde"] }
-candid = "0.9.10"
-ic-cdk = "0.11.0"
-ic-cdk-timers = "0.5.1"
-ic-crypto-extended-bip32 = { git = "https://github.com/dfinity/ic/", rev = "8b6c8d1b0f75b1c4d41a3e251a715bde59c4d19a" }
+bitcoin = { version = "0.31.2", features = ["serde"] }
+candid = "0.10.6"
+ic-cdk = "0.13.1"
+ic-cdk-timers = "0.7.0"
+ic-crypto-extended-bip32 = { git = "https://github.com/dfinity/ic/", tag = "release-2024-03-27_23-01-p2p-ecdsa-fix" }
 ic-stable-structures = "0.6"
-getrandom = { version = "0.2.11", features = ["custom"] }
+getrandom = { version = "0.2.12", features = ["custom"] }
 serde = "1"
 serde_bytes = "0.11.14"
-serde_json = "1.0.113"
+serde_json = "1.0.115"
 ed25519-dalek = "2.1.1"
 hmac-sha512 = "1.1.5"
-bitcoin_hashes = "0.13.0"
+bitcoin_hashes = "0.14.0"
 
 [dev-dependencies]
-secp256k1 = { version = "0.28.2", features = ["global-context"] }
-pocket-ic = "2.0.1"
+secp256k1 = { version = "0.29.0", features = ["global-context"] }
+pocket-ic = "2.2.0"
