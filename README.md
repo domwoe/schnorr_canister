@@ -61,7 +61,7 @@ You can also see how many signatures have been generated at [https://6fwhw-fyaaa
 
 ### Interact with Blast Playground
 
-You can interact with the canister using the [Blast Playground](https://jglts-daaaa-aaaai-qnpma-cai.ic0.app/717.bec4e0dbcb426b2b62247b6ff9c267261c6668caed7d84ef59120c07).
+You can interact with the canister using the [Blast Playground](https://jglts-daaaa-aaaai-qnpma-cai.ic0.app/791.eb240002ce3ec37b9078803cc19950864e12007914ddcfbefb8c439f).
 
 ## To Do
 
