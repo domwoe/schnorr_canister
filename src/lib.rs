@@ -53,6 +53,7 @@ pub enum SchnorrAlgorithm {
 }
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[serde(rename_all = "lowercase")]
 pub struct SchnorrKeyId {
     algorithm: SchnorrAlgorithm,
     name: String,
