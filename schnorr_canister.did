@@ -1,12 +1,12 @@
 type HttpRequest = record {
   url : text;
   method : text;
-  body : vec nat8;
+  body : blob;
   headers : vec record { text; text };
   certificate_version : opt nat16;
 };
 type HttpResponse = record {
-  body : vec nat8;
+  body : blob;
   headers : vec record { text; text };
   status_code : nat16;
 };
@@ -15,18 +15,15 @@ type SchnorrKeyId = record { algorithm : SchnorrAlgorithm; name : text };
 type SchnorrPublicKeyArgs = record {
   key_id : SchnorrKeyId;
   canister_id : opt principal;
-  derivation_path : vec vec nat8;
+  derivation_path : vec blob;
 };
-type SchnorrPublicKeyResult = record {
-  public_key : vec nat8;
-  chain_code : vec nat8;
-};
+type SchnorrPublicKeyResult = record { public_key : blob; chain_code : blob };
 type SignWithSchnorrArgs = record {
   key_id : SchnorrKeyId;
-  derivation_path : vec vec nat8;
-  message : vec nat8;
+  derivation_path : vec blob;
+  message : blob;
 };
-type SignWithSchnorrResult = record { signature : vec nat8 };
+type SignWithSchnorrResult = record { signature : blob };
 service : () -> {
   http_request : (HttpRequest) -> (HttpResponse) query;
   schnorr_public_key : (SchnorrPublicKeyArgs) -> (SchnorrPublicKeyResult);

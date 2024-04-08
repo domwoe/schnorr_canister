@@ -48,12 +48,13 @@ pub struct SignWithSchnorrResult {
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum SchnorrAlgorithm {
+    #[serde(rename = "bip340secp256k1")]
     Bip340Secp256k1,
+    #[serde(rename = "ed25519")]
     Ed25519,
 }
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-#[serde(rename_all = "lowercase")]
 pub struct SchnorrKeyId {
     algorithm: SchnorrAlgorithm,
     name: String,
