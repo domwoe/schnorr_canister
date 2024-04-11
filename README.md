@@ -1,8 +1,17 @@
 # Schnorr Signature Canister
 
-Canister to create schnorr signatures on the Internet Computer.
+The purpose of the canister is to act as a developer preview for the Schnorr threshold signing API of the Internet Computer that is currently under development. The interface is compliant (with the exception that the final API will require attached cycles) with the [current draft for the Management Canister API](https://github.com/dfinity/interface-spec/pull/288) and will be updated as the API is updated.
 
-DO NOT USE IN PRODUCTION! KEY MATERIAL COULD BE ACCESSED BY NODE PROVIDERS!
+If you are interested in building applications using threshold Schnorr you can get started today, and switch to the Management Canister API as soon as it is available. For ideas on what to build check out the [forum post](https://forum.dfinity.org/t/threshold-schnorr-facilitating-brc-20-trading-solana-integration-certificate-signing-and-more/28993) and the [Buidl on Bitcoin RFP](https://github.com/dfinity/grant-rfps/issues/58). 
+
+For general updates on the development, please refer to the following [forum post](https://forum.dfinity.org/t/threshold-schnorr-facilitating-brc-20-trading-solana-integration-certificate-signing-and-more/28993).
+
+DO NOT USE IN PRODUCTION! KEY MATERIAL COULD BE ACCESSED BY NODE PROVIDERS AND WE DON'T GUARANTEE THAT THIS CANISTER WILL STAY AVAILABLE. SEEDS ARE STORED IN STABLE MEMORY BUT WE DON'T GUARANTEE THAT KEYS MIGHT CHANGE DUE TO REINSTALLATION OF THE CANISTER.
+
+## Supported Algorithms
+
+- BIP340 (secp256k1) used for Bitcoin Taproot
+- Ed25519 used in Solana, Cardano, Polkaddot, and others. Furthermore, it is approved by NIST and widely used in Web2.
 
 ## Add the canister to your project
 
