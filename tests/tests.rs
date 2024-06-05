@@ -148,7 +148,9 @@ fn load_schnorr_canister_wasm() -> Vec<u8> {
     use std::io::prelude::*;
 
     let wasm_path = Path::new("./target/wasm32-unknown-unknown/release/schnorr_canister.wasm");
-    let wasm_bytes = std::fs::read(wasm_path).expect("wasm does not exist");
+    let wasm_bytes = std::fs::read(wasm_path).expect(
+        "wasm does not exist - run `cargo build --release --target wasm32-unknown-unknown`",
+    );
 
     let mut e = GzEncoder::new(Vec::new(), Compression::default());
     e.write_all(wasm_bytes.as_slice()).unwrap();
