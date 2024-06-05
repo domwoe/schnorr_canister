@@ -1,12 +1,5 @@
 extern crate schnorr_canister;
 
-use bitcoin::{
-    key::Secp256k1,
-    secp256k1::{schnorr::Signature, Message, PublicKey},
-};
-
-use bitcoin_hashes::{sha256, Hash};
-
 use candid::{decode_one, encode_one, CandidType, Principal};
 use pocket_ic::{PocketIc, WasmResult};
 use schnorr_canister::{
@@ -19,13 +12,17 @@ use std::path::Path;
 
 #[test]
 fn test_sign_with_schnorr_secp256k1() {
+    use k256::schnorr::{Signature, VerifyingKey};
     let pic = PocketIc::new();
 
     let my_principal = Principal::anonymous();
+
+    println!("adding cycles");
     // Create an empty canister as the anonymous principal and add cycles.
     let canister_id = pic.create_canister();
     pic.add_cycles(canister_id, 2_000_000_000_000);
 
+    println!("installing canister");
     let wasm_bytes = load_schnorr_canister_wasm();
     pic.install_canister(canister_id, wasm_bytes, vec![], None);
 
@@ -40,15 +37,14 @@ fn test_sign_with_schnorr_secp256k1() {
     let key_id = SchnorrKeyIds::TestKey1.to_key_id();
     let message = b"Test message";
 
-    let digest = sha256::Hash::hash(message).to_byte_array();
-
     let payload: SignWithSchnorrArgs = SignWithSchnorrArgs {
         message: ByteBuf::from(message.to_vec()),
         derivation_path: derivation_path.clone(),
         key_id: key_id.clone(),
     };
 
-    let res: Result<SignWithSchnorrResult, String> = update(
+    println!("submitting signing request");
+    let sig_res: Result<SignWithSchnorrResult, String> = update(
         &pic,
         my_principal,
         canister_id,
@@ -56,14 +52,13 @@ fn test_sign_with_schnorr_secp256k1() {
         encode_one(payload).unwrap(),
     );
 
-    let sig = res.unwrap().signature;
-
     let payload = SchnorrPublicKeyArgs {
         canister_id: None,
         derivation_path: derivation_path.clone(),
         key_id: key_id.clone(),
     };
 
+    println!("getting public key");
     let res: Result<SchnorrPublicKeyResult, String> = update(
         &pic,
         my_principal,
@@ -73,15 +68,13 @@ fn test_sign_with_schnorr_secp256k1() {
     );
 
     let pub_key_sec1 = res.unwrap().public_key;
+    let pub_key_bip340 = &pub_key_sec1[1..];
+    let verifying_key = VerifyingKey::from_bytes(pub_key_bip340).unwrap();
 
-    let pub_key = PublicKey::from_slice(&pub_key_sec1).unwrap().into();
+    let raw_sig = sig_res.unwrap().signature;
+    let sig = Signature::try_from(raw_sig.as_ref()).expect("should parse signature bytes");
 
-    let sig = Signature::from_slice(&sig).unwrap();
-
-    let msg = Message::from_digest_slice(&digest).unwrap();
-
-    let secp = Secp256k1::verification_only();
-    assert!(secp.verify_schnorr(&sig, &msg, &pub_key).is_ok());
+    assert!(verifying_key.verify_raw(message, &sig).is_ok());
 }
 
 #[test]
@@ -150,9 +143,18 @@ fn test_sign_with_schnorr_ed25519() {
 }
 
 fn load_schnorr_canister_wasm() -> Vec<u8> {
-    let wasm_path = Path::new("./target/wasm32-unknown-unknown/release/schnorr_canister.wasm");
+    use flate2::write::GzEncoder;
+    use flate2::Compression;
+    use std::io::prelude::*;
 
-    std::fs::read(wasm_path).unwrap()
+    let wasm_path = Path::new("./target/wasm32-unknown-unknown/release/schnorr_canister.wasm");
+    let wasm_bytes = std::fs::read(wasm_path).expect("wasm does not exist");
+
+    let mut e = GzEncoder::new(Vec::new(), Compression::default());
+    e.write_all(wasm_bytes.as_slice()).unwrap();
+    let zipped_bytes = e.finish().unwrap();
+
+    zipped_bytes
 }
 
 pub fn update<T: CandidType + for<'de> Deserialize<'de>>(
