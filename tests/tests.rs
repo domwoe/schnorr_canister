@@ -17,12 +17,10 @@ fn test_sign_with_schnorr_secp256k1() {
 
     let my_principal = Principal::anonymous();
 
-    println!("adding cycles");
     // Create an empty canister as the anonymous principal and add cycles.
     let canister_id = pic.create_canister();
     pic.add_cycles(canister_id, 2_000_000_000_000);
 
-    println!("installing canister");
     let wasm_bytes = load_schnorr_canister_wasm();
     pic.install_canister(canister_id, wasm_bytes, vec![], None);
 
@@ -43,7 +41,6 @@ fn test_sign_with_schnorr_secp256k1() {
         key_id: key_id.clone(),
     };
 
-    println!("submitting signing request");
     let sig_res: Result<SignWithSchnorrResult, String> = update(
         &pic,
         my_principal,
@@ -58,7 +55,6 @@ fn test_sign_with_schnorr_secp256k1() {
         key_id: key_id.clone(),
     };
 
-    println!("getting public key");
     let res: Result<SchnorrPublicKeyResult, String> = update(
         &pic,
         my_principal,
