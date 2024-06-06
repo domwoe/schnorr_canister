@@ -883,12 +883,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hmac-sha512"
-version = "1.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e4ce1f4656bae589a3fab938f9f09bf58645b7ed01a2c5f8a3c238e01a4ef78a"
-
-[[package]]
 name = "http"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2137,7 +2131,6 @@ dependencies = [
  "ed25519-dalek",
  "flate2",
  "getrandom",
- "hmac-sha512",
  "ic-cdk",
  "ic-cdk-timers",
  "ic-crypto-ed25519",
