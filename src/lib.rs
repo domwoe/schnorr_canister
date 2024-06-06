@@ -1,11 +1,5 @@
 use bip32::{Seed, XPrv};
-use bitcoin::{
-    key::{Secp256k1, UntweakedKeypair},
-    secp256k1::Message,
-};
-use bitcoin_hashes::{sha256, Hash};
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
-use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
 use getrandom::{register_custom_getrandom, Error};
 use ic_crypto_extended_bip32::{DerivationIndex, DerivationPath};
 use ic_stable_structures::{storable::Bound, StableBTreeMap, StableCell, Storable};
@@ -234,17 +228,12 @@ fn schnorr_public_key_secp256k1(
     seed: Seed,
     indexes: Vec<DerivationIndex>,
 ) -> SchnorrPublicKeyResult {
-    let secp256k1: Secp256k1<bitcoin::secp256k1::All> = Secp256k1::new();
     let root_xprv = XPrv::new(&seed).unwrap();
-    let key_bytes = root_xprv.private_key().to_bytes();
-
-    let key_pair = UntweakedKeypair::from_seckey_slice(&secp256k1, &key_bytes)
-        .expect("Should generate key pair");
+    let public_key_bytes = root_xprv.public_key().to_bytes();
 
     let master_chain_code = [0u8; 32];
-    let public_key_sec1 = key_pair.public_key().serialize();
     let res = DerivationPath::new(indexes)
-        .public_key_derivation(&public_key_sec1, &master_chain_code)
+        .public_key_derivation(&public_key_bytes, &master_chain_code)
         .expect("Should derive key");
 
     SchnorrPublicKeyResult {
@@ -254,6 +243,8 @@ fn schnorr_public_key_secp256k1(
 }
 
 fn schnorr_public_key_ed25519(seed: Seed, indexes: Vec<DerivationIndex>) -> SchnorrPublicKeyResult {
+    use ed25519_dalek::{SigningKey, VerifyingKey};
+
     let (secret, chain_code) = derive_ed25519_private_key(seed.as_bytes(), indexes);
     let key = SigningKey::from_bytes(&secret);
     let public_key = VerifyingKey::from(&key);
@@ -269,6 +260,8 @@ fn sign_with_schnorr_secp256k1(
     indexes: Vec<DerivationIndex>,
     message: ByteBuf,
 ) -> SignWithSchnorrResult {
+    use k256::schnorr::SigningKey;
+
     let root_xprv = XPrv::new(&seed).unwrap();
     let private_key_bytes = root_xprv.private_key().to_bytes();
 
@@ -277,18 +270,13 @@ fn sign_with_schnorr_secp256k1(
         .private_key_derivation(&private_key_bytes, &master_chain_code)
         .expect("Should derive key");
 
-    let secp256k1: Secp256k1<bitcoin::secp256k1::All> = Secp256k1::new();
-    let key_pair = UntweakedKeypair::from_seckey_slice(&secp256k1, &res.derived_private_key)
-        .expect("Should generate key pair");
-
-    let digest = sha256::Hash::hash(&message).to_byte_array();
-    let sig = secp256k1.sign_schnorr_no_aux_rand(
-        &Message::from_digest_slice(&digest).expect("should be cryptographically secure hash"),
-        &key_pair,
-    );
+    let sk = SigningKey::from_bytes(&res.derived_private_key).expect("Should parse secret key");
+    let sig = sk
+        .sign_raw(&message, &Default::default())
+        .expect("should sign message");
 
     SignWithSchnorrResult {
-        signature: ByteBuf::from(sig.serialize().to_vec()),
+        signature: ByteBuf::from(sig.to_bytes().to_vec()),
     }
 }
 
@@ -297,6 +285,8 @@ fn sign_with_schnorr_ed25519(
     indexes: Vec<DerivationIndex>,
     message: ByteBuf,
 ) -> SignWithSchnorrResult {
+    use ed25519_dalek::{Signer, SigningKey};
+
     let (secret, _) = derive_ed25519_private_key(seed.as_bytes(), indexes);
     let key = SigningKey::from_bytes(&secret);
     SignWithSchnorrResult {
@@ -363,10 +353,7 @@ mod tests {
 
     #[test]
     fn test_sign_and_verify_schnorr_secp256k1() {
-        use bitcoin::{
-            secp256k1::{schnorr::Signature, Secp256k1},
-            PublicKey,
-        };
+        use k256::schnorr::{Signature, VerifyingKey};
 
         // Setup for signing
         let test_seed = [1u8; 64];
@@ -378,7 +365,6 @@ mod tests {
         let indexes = to_derivation_indexes(&Principal::anonymous(), &derivation_path);
 
         let message = b"Test message";
-        let digest = sha256::Hash::hash(message).to_byte_array();
 
         // Call the sign function
         let sign_reply = sign_with_schnorr_secp256k1(
@@ -387,25 +373,18 @@ mod tests {
             ByteBuf::from(message.to_vec()),
         );
 
-        // Setup for verification
-        let secp = Secp256k1::verification_only();
-        let signature =
-            Signature::from_slice(&sign_reply.signature).expect("Invalid signature format");
-
         let public_key_reply = schnorr_public_key_secp256k1(Seed::new(test_seed), indexes.clone());
 
-        let raw_public_key = public_key_reply.public_key;
+        let raw_sec1_public_key = public_key_reply.public_key;
+        let raw_bip340_public_key = &raw_sec1_public_key[1..];
 
-        let public_key = PublicKey::from_slice(&raw_public_key).unwrap().into();
+        let verifying_key = VerifyingKey::from_bytes(raw_bip340_public_key).unwrap();
+
+        let signature = Signature::try_from(sign_reply.signature.as_ref())
+            .expect("should parse signature bytes");
 
         // Verify the signature
-        assert!(secp
-            .verify_schnorr(
-                &signature,
-                &Message::from_digest_slice(&digest).unwrap(),
-                &public_key
-            )
-            .is_ok());
+        assert!(verifying_key.verify_raw(message, &signature).is_ok());
     }
 
     #[test]
