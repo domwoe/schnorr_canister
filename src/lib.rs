@@ -255,7 +255,7 @@ fn schnorr_public_key_ed25519(seed: Seed, indexes: Vec<DerivationIndex>) -> Schn
     }
 }
 
-pub fn sign_with_schnorr_secp256k1(
+fn sign_with_schnorr_secp256k1(
     seed: Seed,
     indexes: Vec<DerivationIndex>,
     message: ByteBuf,
