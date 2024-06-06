@@ -15,6 +15,7 @@ bip32 = { version = "0.5.1", features = ["k256"] }
 candid = "0.10.6"
 ic-cdk = "0.13.1"
 ic-cdk-timers = "0.7.0"
+ic-crypto-ed25519 = { git = "https://github.com/dfinity/ic/" }
 ic-crypto-extended-bip32 = { git = "https://github.com/dfinity/ic/", tag = "release-2024-03-27_23-01-p2p-ecdsa-fix" }
 ic-stable-structures = "0.6"
 getrandom = { version = "0.2.12", features = ["custom"] }

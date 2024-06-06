@@ -1,16 +1,13 @@
 use bip32::{Seed, XPrv};
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use getrandom::{register_custom_getrandom, Error};
-use ic_crypto_extended_bip32::{DerivationIndex, DerivationPath};
 use ic_stable_structures::{storable::Bound, StableBTreeMap, StableCell, Storable};
 use serde::Serialize;
 use serde_bytes::ByteBuf;
 use std::{borrow::Cow, cell::RefCell, time::Duration};
 
-mod ed25519;
 mod memory;
 
-use ed25519::derive_ed25519_private_key;
 use memory::Memory;
 
 const MAX_VALUE_SIZE: u32 = 100;
@@ -176,10 +173,15 @@ fn schnorr_public_key(arg: SchnorrPublicKeyArgs) -> SchnorrPublicKeyResult {
         None => ic_cdk::caller(),
     };
 
-    let indexes = to_derivation_indexes(&canister_id, &arg.derivation_path);
     match arg.key_id.algorithm {
-        SchnorrAlgorithm::Bip340Secp256k1 => schnorr_public_key_secp256k1(seed, indexes),
-        SchnorrAlgorithm::Ed25519 => schnorr_public_key_ed25519(seed, indexes),
+        SchnorrAlgorithm::Bip340Secp256k1 => {
+            let derivation_path = derivation_path_ext_bip32(&canister_id, &arg.derivation_path);
+            schnorr_public_key_secp256k1(seed, derivation_path)
+        },
+        SchnorrAlgorithm::Ed25519 => {
+            let derivation_path = derivation_path_ed25519(&canister_id, &arg.derivation_path);
+            schnorr_public_key_ed25519(seed, derivation_path)
+        },
     }
 }
 
@@ -200,39 +202,56 @@ fn sign_with_schnorr(arg: SignWithSchnorrArgs) -> SignWithSchnorrResult {
     });
 
     let canister_id = ic_cdk::caller();
-    let indexes = to_derivation_indexes(&canister_id, &arg.derivation_path);
 
     match arg.key_id.algorithm {
         SchnorrAlgorithm::Bip340Secp256k1 => {
-            sign_with_schnorr_secp256k1(seed, indexes, arg.message)
+            let derivation_path = derivation_path_ext_bip32(&canister_id, &arg.derivation_path);
+            sign_with_schnorr_secp256k1(seed, derivation_path, arg.message)
         }
-        SchnorrAlgorithm::Ed25519 => sign_with_schnorr_ed25519(seed, indexes, arg.message),
+        SchnorrAlgorithm::Ed25519 => {
+            let derivation_path = derivation_path_ed25519(&canister_id, &arg.derivation_path);
+            sign_with_schnorr_ed25519(seed, derivation_path, arg.message)
+        },
     }
 }
 
-fn to_derivation_indexes(
+fn derivation_path_ext_bip32(
     canister_id: &Principal,
     derivation_path: &Vec<ByteBuf>,
-) -> Vec<DerivationIndex> {
+) -> ic_crypto_extended_bip32::DerivationPath {
     let mut path = vec![];
-    let derivation_index = DerivationIndex(canister_id.as_slice().to_vec());
+    let derivation_index = ic_crypto_extended_bip32::DerivationIndex(canister_id.as_slice().to_vec());
     path.push(derivation_index);
 
     for index in derivation_path {
-        path.push(DerivationIndex(index.to_vec()));
+        path.push( ic_crypto_extended_bip32::DerivationIndex(index.to_vec()));
     }
-    path
+    ic_crypto_extended_bip32::DerivationPath::new(path)
+}
+
+fn derivation_path_ed25519(
+    canister_id: &Principal,
+    derivation_path: &Vec<ByteBuf>,
+) -> ic_crypto_ed25519::DerivationPath {
+    let mut path = vec![];
+    let derivation_index = ic_crypto_ed25519::DerivationIndex(canister_id.as_slice().to_vec());
+    path.push(derivation_index);
+
+    for index in derivation_path {
+        path.push(ic_crypto_ed25519::DerivationIndex(index.to_vec()));
+    }
+    ic_crypto_ed25519::DerivationPath::new(path)
 }
 
 fn schnorr_public_key_secp256k1(
     seed: Seed,
-    indexes: Vec<DerivationIndex>,
+    derivation_path: ic_crypto_extended_bip32::DerivationPath,
 ) -> SchnorrPublicKeyResult {
     let root_xprv = XPrv::new(&seed).unwrap();
     let public_key_bytes = root_xprv.public_key().to_bytes();
 
     let master_chain_code = [0u8; 32];
-    let res = DerivationPath::new(indexes)
+    let res = derivation_path
         .public_key_derivation(&public_key_bytes, &master_chain_code)
         .expect("Should derive key");
 
@@ -242,22 +261,21 @@ fn schnorr_public_key_secp256k1(
     }
 }
 
-fn schnorr_public_key_ed25519(seed: Seed, indexes: Vec<DerivationIndex>) -> SchnorrPublicKeyResult {
-    use ed25519_dalek::{SigningKey, VerifyingKey};
-
-    let (secret, chain_code) = derive_ed25519_private_key(seed.as_bytes(), indexes);
-    let key = SigningKey::from_bytes(&secret);
-    let public_key = VerifyingKey::from(&key);
+fn schnorr_public_key_ed25519(seed: Seed, derivation_path: ic_crypto_ed25519::DerivationPath) -> SchnorrPublicKeyResult {
+    let seed_32_bytes = <[u8; 32]>::try_from(&seed.as_bytes()[0..32]).expect("seed should be >= 32 bytes");
+    let master_secret = ic_crypto_ed25519::PrivateKey::deserialize_raw_32(&seed_32_bytes);
+    let (derived_secret, chain_code) = master_secret.derive_subkey(&derivation_path);
+    let public_key = derived_secret.public_key();
 
     SchnorrPublicKeyResult {
-        public_key: ByteBuf::from(public_key.to_bytes().to_vec()),
+        public_key: ByteBuf::from(public_key.serialize_raw().to_vec()),
         chain_code: ByteBuf::from(chain_code.to_vec()),
     }
 }
 
 fn sign_with_schnorr_secp256k1(
     seed: Seed,
-    indexes: Vec<DerivationIndex>,
+    derivation_path: ic_crypto_extended_bip32::DerivationPath,
     message: ByteBuf,
 ) -> SignWithSchnorrResult {
     use k256::schnorr::SigningKey;
@@ -266,7 +284,7 @@ fn sign_with_schnorr_secp256k1(
     let private_key_bytes = root_xprv.private_key().to_bytes();
 
     let master_chain_code = [0u8; 32];
-    let res = DerivationPath::new(indexes)
+    let res = derivation_path
         .private_key_derivation(&private_key_bytes, &master_chain_code)
         .expect("Should derive key");
 
@@ -282,15 +300,15 @@ fn sign_with_schnorr_secp256k1(
 
 fn sign_with_schnorr_ed25519(
     seed: Seed,
-    indexes: Vec<DerivationIndex>,
+    derivation_path: ic_crypto_ed25519::DerivationPath,
     message: ByteBuf,
 ) -> SignWithSchnorrResult {
-    use ed25519_dalek::{Signer, SigningKey};
+    let seed_32_bytes = <[u8; 32]>::try_from(&seed.as_bytes()[0..32]).expect("seed should be >= 32 bytes");
+    let master_secret = ic_crypto_ed25519::PrivateKey::deserialize_raw_32(&seed_32_bytes);
+    let (derived_secret, _chain_code) = master_secret.derive_subkey(&derivation_path);
 
-    let (secret, _) = derive_ed25519_private_key(seed.as_bytes(), indexes);
-    let key = SigningKey::from_bytes(&secret);
     SignWithSchnorrResult {
-        signature: ByteBuf::from(key.sign(&message).to_vec()),
+        signature: ByteBuf::from(derived_secret.sign_message(&message).to_vec()),
     }
 }
 
@@ -362,7 +380,7 @@ mod tests {
             .iter()
             .map(|v| ByteBuf::from(v.clone()))
             .collect();
-        let indexes = to_derivation_indexes(&Principal::anonymous(), &derivation_path);
+        let indexes = derivation_path_ext_bip32(&Principal::anonymous(), &derivation_path);
 
         let message = b"Test message";
 
@@ -398,14 +416,14 @@ mod tests {
             .iter()
             .map(|v| ByteBuf::from(v.clone()))
             .collect();
-        let indexes = to_derivation_indexes(&Principal::anonymous(), &derivation_path);
+        let derivation_path = derivation_path_ed25519(&Principal::anonymous(), &derivation_path);
 
         let message = b"Test message";
 
         // Call the sign function
         let sign_reply = sign_with_schnorr_ed25519(
             Seed::new(test_seed),
-            indexes.clone(),
+            derivation_path.clone(),
             ByteBuf::from(message.to_vec()),
         );
 
@@ -413,7 +431,7 @@ mod tests {
         let signature =
             Signature::from_slice(&sign_reply.signature).expect("Invalid signature format");
 
-        let public_key_reply = schnorr_public_key_ed25519(Seed::new(test_seed), indexes.clone());
+        let public_key_reply = schnorr_public_key_ed25519(Seed::new(test_seed), derivation_path);
 
         let raw_public_key = public_key_reply.public_key.as_slice();
         assert_eq!(raw_public_key.len(), 32);
