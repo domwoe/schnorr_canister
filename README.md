@@ -41,10 +41,10 @@ If you want to test your project locally, you can use the following commands:
 
 ```bash
 # Starts the replica, running in the background
-dfx start --background
+dfx start --clean --background
 
 # Deploys your canisters to the replica and generates your candid interface
-./deploy.sh
+./scripts/test.sh
 ```
 
 Once the job is completed, your application will be available at `http://localhost:4943?canisterId={asset_canister_id}`.
@@ -56,8 +56,7 @@ We use [PocketIC](https://github.com/dfinity/pocketic) for integration testing. 
 You can run the tests with the following command:
 
 ```sh
-cargo build --release --target wasm32-unknown-unknown --package schnorr_canister
-cargo test
+./scripts/test.sh
 ```
 
 ## Deployment on the Internet Computer
