@@ -1,7 +1,6 @@
 # Schnorr Signature Canister
 
-> :warning: 2024/08/13 The [Deuterium Milestone](https://x.com/dfinity/status/1823341406254985448) has gone live which enables threshold signing for the BIP340 algorithm on mainnet. Check out the [developer docs](https://internetcomputer.org/docs/current/developer-docs/smart-contracts/signatures/signing-messages-t-schnorr). For Ed25519 you can still experiment with this developer preview.
-
+> :warning: 2024/08/13 The [Deuterium Milestone](https://x.com/dfinity/status/1823341406254985448) has gone live which enables threshold signing for the BIP340 algorithm on mainnet. Ed2219 is available as a test key as well. Check out the [developer docs](https://internetcomputer.org/docs/current/developer-docs/smart-contracts/signatures/signing-messages-t-schnorr).
 
 The purpose of the canister is to act as a developer preview for the Schnorr threshold signing API of the Internet Computer that is currently under development. The interface is compliant (with the exception that the final API will require attached cycles) with the [current draft for the Management Canister API](https://github.com/dfinity/interface-spec/pull/288) and will be updated as the API is updated.
 
